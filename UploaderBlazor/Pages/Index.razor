@@ -1,0 +1,86 @@
+﻿@using System.Web
+@using System
+@using System.IO
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Logging
+@using System.Security.Claims
+@inject ILogger<Index> Logger
+@inject IWebHostEnvironment Environment
+@page "/"
+<h3>Upload Files</h3>
+
+
+<p>
+    <label>
+        <InputFile OnChange="@LoadFiles" multiple />
+    </label>
+</p>
+
+@if (isLoading)
+{
+    <p>Uploading...</p>
+}
+else
+{
+    <ul>
+        @foreach (var file in loadedFiles)
+        {
+            <li>
+                <ul>
+                    <li>Upload Successfull</li>
+                    <li>Name: @file.Name</li>
+                    <li>Last modified: @file.LastModified.ToString()</li>
+                    <li>Size (bytes): @file.Size</li>
+                    <li>Content type: @file.ContentType</li>
+                </ul>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private List<IBrowserFile> loadedFiles = new();
+    private string Email;
+    private bool isLoading;
+    [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        loadedFiles.Clear();
+        var authstate = await authenticationStateTask;
+        Email = authstate?.User.FindFirst(ClaimTypes.Email)?.Value ?? "Unknown";
+
+        foreach (var file in e.GetMultipleFiles())
+        {
+            try
+            {
+                loadedFiles.Add(file);
+                var basePath = Path.Combine(Environment.ContentRootPath,
+                         "uploads", Email);
+                var trustedFileNameForFileStorage = file.Name;
+
+
+                bool exists = System.IO.Directory.Exists(basePath);
+
+                if (!exists)
+                    System.IO.Directory.CreateDirectory(basePath);
+
+
+
+                var path = Path.Combine(basePath,
+                        trustedFileNameForFileStorage);
+
+                await using FileStream fs = new(path, FileMode.Create);
+                await file.OpenReadStream(file.Size).CopyToAsync(fs);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("File: {Filename} Error: {Error}",
+                    file.Name, ex.Message);
+            }
+        }
+
+        isLoading = false;
+    }
+}

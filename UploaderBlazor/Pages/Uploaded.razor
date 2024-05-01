@@ -1,0 +1,108 @@
+﻿@using System.Web
+@using System
+@using System.IO
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Logging
+@using System.Security.Claims
+@inject ILogger<Index> Logger
+@inject IWebHostEnvironment Environment
+@page "/Uploaded"
+@inject IJSRuntime JS
+
+
+<PageTitle>Uploaded</PageTitle>
+
+
+<h1>UploudedFiles</h1>
+
+
+@if (Files == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Directory</th>
+                <th>Create Date</th>
+                <th>Size</th>
+                <th>Download</th>
+                @if (IsAdmin)
+                {
+                    <th>Remove</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var fl in Files)
+            {
+                <tr>
+                    <td>@fl.Name</td>
+                    <td>@fl.Directory.Name</td>
+                    <td>@fl.CreationTime</td>
+                    <td>@((fl.Length / 1024f) / 1024f) Mb</td>
+                    <td> <button @onclick='async ()=>await Download(fl.Directory.FullName,fl.Name)'>Download</button> </td>
+                    @if (IsAdmin)
+                    {
+                        <td> <button @onclick='async ()=>await Remove(fl.Directory.FullName,fl.Name)'>Remove</button> </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private List<FileInfo> Files { get; set; } = new List<FileInfo>();
+    private bool IsAdmin { get; set; } = false;
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await authenticationStateTask;
+        IsAdmin = !((authstate?.User.FindFirst(ClaimTypes.Role)?.Value ?? "User") == "User");
+        await FillReport();
+
+
+    }
+
+    protected async Task FillReport()
+    {
+        if (IsAdmin)
+        {
+            var basePath = Path.Combine(Environment.ContentRootPath,
+                    "uploads");
+            DirectoryInfo d = new DirectoryInfo(basePath);
+            var Directories = d.GetDirectories().ToList();
+            foreach (var item in Directories)
+            {
+                Files.AddRange(item.GetFiles().ToList());
+            }
+        }
+        else
+        {
+            var basePathUnknown = Path.Combine(Environment.ContentRootPath,
+                      "uploads", "Unknown");
+            DirectoryInfo dUnknown = new DirectoryInfo(basePathUnknown);
+            Files.AddRange(dUnknown.GetFiles().ToList());
+        }
+    }
+    protected async Task Download(string path, string Filename)
+    {
+        var pathFull = Path.Combine(path, Filename);
+        using var streamRef = new DotNetStreamReference(File.OpenRead(pathFull));
+
+        await JS.InvokeVoidAsync("downloadFileFromStream", Filename, streamRef);
+    }
+    protected async Task Remove(string path, string Filename)
+    {
+        var pathFull = Path.Combine(path, Filename);
+        File.Delete(pathFull);
+        Files = new List<FileInfo>();
+        await FillReport();
+        StateHasChanged();
+    }
+
+}
