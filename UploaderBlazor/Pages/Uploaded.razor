@@ -15,7 +15,7 @@
 
 <h1>UploudedFiles</h1>
 
-
+@Exeption
 @if (Files == null)
 {
     <p><em>Loading...</em></p>
@@ -59,17 +59,28 @@ else
     [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
     private List<FileInfo> Files { get; set; } = new List<FileInfo>();
     private bool IsAdmin { get; set; } = false;
+    private string Exeption { get; set; } = "";
     protected override async Task OnInitializedAsync()
     {
         var authstate = await authenticationStateTask;
         IsAdmin = !((authstate?.User.FindFirst(ClaimTypes.Role)?.Value ?? "User") == "User");
-        await FillReport();
+        try
+        {
+            await FillReport();
+
+        }
+        catch (Exception ex)
+        {
+
+            Exeption = ex.Message + "::" + ex.StackTrace;
+        }
 
 
     }
 
     protected async Task FillReport()
     {
+
         if (IsAdmin)
         {
             var basePath = Path.Combine(Environment.ContentRootPath,
@@ -83,8 +94,14 @@ else
         }
         else
         {
+
             var basePathUnknown = Path.Combine(Environment.ContentRootPath,
                       "uploads", "Unknown");
+            bool exists = System.IO.Directory.Exists(basePathUnknown);
+
+            if (!exists)
+                System.IO.Directory.CreateDirectory(basePathUnknown);
+
             DirectoryInfo dUnknown = new DirectoryInfo(basePathUnknown);
             Files.AddRange(dUnknown.GetFiles().ToList());
         }

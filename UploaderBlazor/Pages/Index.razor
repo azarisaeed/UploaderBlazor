@@ -15,7 +15,7 @@
         <InputFile OnChange="@LoadFiles" multiple />
     </label>
 </p>
-
+@Exeption
 @if (isLoading)
 {
     <p>Uploading...</p>
@@ -41,6 +41,7 @@ else
 @code {
     private List<IBrowserFile> loadedFiles = new();
     private string Email;
+    private string Exeption="";
     private bool isLoading;
     [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
 
@@ -76,8 +77,8 @@ else
             }
             catch (Exception ex)
             {
-                Logger.LogError("File: {Filename} Error: {Error}",
-                    file.Name, ex.Message);
+
+                Exeption = ex.Message + "::" + ex.StackTrace;
             }
         }
 

@@ -1,11 +1,10 @@
 using Microsoft.Identity.Web;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using UploaderBlazor.Security;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("UploaderBlazorContextConnection") ?? throw new InvalidOperationException("Connection string 'UploaderBlazorContextConnection' not found.");
+//var connectionString = builder.Configuration.GetConnectionString("UploaderBlazorContextConnection") ?? throw new InvalidOperationException("Connection string 'UploaderBlazorContextConnection' not found.");
 
 builder.Services.AddAuthentication(o =>
 {
@@ -28,11 +27,11 @@ builder.Services.AddServerSideBlazor()
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-//if (!app.Environment.IsDevelopment())
-//{
-//    app.UseExceptionHandler("/Error");
-//    app.UseHsts();
-//}
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}
 
 
 app.UseStaticFiles();
