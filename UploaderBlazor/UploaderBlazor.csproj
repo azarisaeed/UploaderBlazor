@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-UploaderBlazor-0e7e85b8-efac-469a-a28e-2a731b028f15</UserSecretsId>
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+
   </PropertyGroup>
 
   <ItemGroup>

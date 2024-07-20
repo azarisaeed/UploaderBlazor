@@ -40,6 +40,11 @@
             anchorElement.remove();
             URL.revokeObjectURL(url);
         }
+        window.clientJsfunctions = {
+            RedirectTo: function (path) {
+                window.location = path;
+            }
+        };
     </script>
 </body>
 </html>

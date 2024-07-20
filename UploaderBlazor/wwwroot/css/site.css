@@ -69,3 +69,14 @@ a, .btn-link {
     background-size:cover;
     backdrop-filter:blur(10px)
 }
+.content {
+    background-color: white;
+    width: 90%;
+    margin-top: 2%;
+    margin-left: auto;
+    padding: 2%;
+    border-radius: 10px;
+    margin-right: auto;
+    box-sizing: border-box;
+    box-shadow: 1px 1px 30px #aaa6a6
+}

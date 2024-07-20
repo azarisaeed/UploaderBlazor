@@ -4,10 +4,13 @@
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Logging
 @using System.Security.Claims
+
 @inject ILogger<Index> Logger
 @inject IWebHostEnvironment Environment
 @page "/Uploaded"
 @inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
 
 
 <PageTitle>Uploaded</PageTitle>
@@ -44,7 +47,7 @@ else
                     <td>@fl.Directory.Name</td>
                     <td>@fl.CreationTime</td>
                     <td>@((fl.Length / 1024f) / 1024f) Mb</td>
-                    <td> <button @onclick='async ()=>await Download(fl.Directory.FullName,fl.Name)'>Download</button> </td>
+                    <td> <button @onclick='async ()=>await Download(fl.Directory.Name,fl.Name)'>Download</button> </td>
                     @if (IsAdmin)
                     {
                         <td> <button @onclick='async ()=>await Remove(fl.Directory.FullName,fl.Name)'>Remove</button> </td>
@@ -84,7 +87,7 @@ else
         if (IsAdmin)
         {
             var basePath = Path.Combine(Environment.ContentRootPath,
-                    "uploads");
+                    "wwwroot/uploads");
             DirectoryInfo d = new DirectoryInfo(basePath);
             var Directories = d.GetDirectories().ToList();
             foreach (var item in Directories)
@@ -96,7 +99,7 @@ else
         {
 
             var basePathUnknown = Path.Combine(Environment.ContentRootPath,
-                      "uploads", "Unknown");
+                      "wwwroot/uploads", "Unknown");
             bool exists = System.IO.Directory.Exists(basePathUnknown);
 
             if (!exists)
@@ -105,13 +108,16 @@ else
             DirectoryInfo dUnknown = new DirectoryInfo(basePathUnknown);
             Files.AddRange(dUnknown.GetFiles().ToList());
         }
+        Files = Files.OrderByDescending(i => i.CreationTime).ToList(); 
     }
     protected async Task Download(string path, string Filename)
     {
-        var pathFull = Path.Combine(path, Filename);
-        using var streamRef = new DotNetStreamReference(File.OpenRead(pathFull));
-
-        await JS.InvokeVoidAsync("downloadFileFromStream", Filename, streamRef);
+        await RedirectTo("uploads/"+path + "/" + Filename);
+    }
+    public  async Task<string> RedirectTo(string path)
+    {
+        return await JS.InvokeAsync<string>(
+            "clientJsfunctions.RedirectTo", path);
     }
     protected async Task Remove(string path, string Filename)
     {
