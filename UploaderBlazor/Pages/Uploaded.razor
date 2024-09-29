@@ -28,10 +28,12 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th>Row</th>
                 <th>Name</th>
                 <th>Directory</th>
                 <th>Create Date</th>
                 <th>Size</th>
+                <th>Preview</th>
                 <th>Download</th>
                 @if (IsAdmin)
                 {
@@ -40,13 +42,18 @@ else
             </tr>
         </thead>
         <tbody>
+            @{var i = 0;}
             @foreach (var fl in Files)
             {
+                i++;
+                var path = "uploads/" + fl.Directory.Name + "/" + fl.Name;
                 <tr>
+                    <td>@i</td>
                     <td>@fl.Name</td>
                     <td>@fl.Directory.Name</td>
                     <td>@fl.CreationTime</td>
                     <td>@((fl.Length / 1024f) / 1024f) Mb</td>
+                    <td><img src="@path" alt="Can not Load image" width="100" /></td>
                     <td> <button @onclick='async ()=>await Download(fl.Directory.Name,fl.Name)'>Download</button> </td>
                     @if (IsAdmin)
                     {
