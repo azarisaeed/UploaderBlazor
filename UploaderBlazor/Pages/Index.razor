@@ -7,41 +7,61 @@
 @inject ILogger<Index> Logger
 @inject IWebHostEnvironment Environment
 @page "/"
-<h3>Upload Files</h3>
 
 
-<p>
-    <label>
-        <InputFile OnChange="@LoadFiles" multiple />
-    </label>
-</p>
+<MudText Typo="Typo.h4">Upload</MudText>
+<MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="@LoadFiles" multiple>
+    <ActivatorContent>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
+            Upload Files
+        </MudButton>
+    </ActivatorContent>
+    <SelectedTemplate>
+        @if (context != null)
+        {
+            <MudText Typo="Typo.h4">Selected Files</MudText>
+
+            <MudDataGrid Class="table" title="Selected Files" Items="context" Filterable="false" SortMode="@SortMode.None" Groupable="false" Striped="true">
+                <Columns>
+                    <MudBlazor.PropertyColumn Title="Name" Property="file => file.Name" />
+                    <MudBlazor.PropertyColumn Title="Last modified" Property="file => file.LastModified" />
+                    <MudBlazor.PropertyColumn Title="Size (MB)" Property="file => ((file.Size / 1024f) / 1024f)" />
+                    <MudBlazor.PropertyColumn Title="Content type" Property="file =>file.ContentType" />
+
+                </Columns>
+            </MudDataGrid>
+        }
+        else
+        {
+            <MudText>No Files</MudText>
+        }
+    </SelectedTemplate>
+</MudFileUpload>
 @Exeption
 @if (isLoading)
 {
-    <p>Uploading...</p>
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
 }
 else
 {
-    <ul>
-        @foreach (var file in loadedFiles)
-        {
-            <li>
-                <ul>
-                    <li>Upload Successfull</li>
-                    <li>Name: @file.Name</li>
-                    <li>Last modified: @file.LastModified.ToString()</li>
-                    <li>Size (bytes): @file.Size</li>
-                    <li>Content type: @file.ContentType</li>
-                </ul>
-            </li>
-        }
-    </ul>
+    <MudText Typo="Typo.h4">Uploaded Files</MudText>
+
+    <MudDataGrid Class="table" title="Uploaded Files" Items="loadedFiles" Filterable="false" SortMode="@SortMode.None" Groupable="false" Striped="true">
+        <Columns>
+            <MudBlazor.PropertyColumn Title="Name" Property="file => file.Name" />
+            <MudBlazor.PropertyColumn Title="Last modified" Property="file => file.LastModified" />
+            <MudBlazor.PropertyColumn Title="Size (MB)" Property="file => ((file.Size / 1024f) / 1024f)" />
+            <MudBlazor.PropertyColumn Title="Content type" Property="file =>file.ContentType" />
+
+        </Columns>
+    </MudDataGrid>
 }
 
 @code {
     private List<IBrowserFile> loadedFiles = new();
     private string Email;
-    private string Exeption="";
+    private string Exeption = "";
     private bool isLoading;
     [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
 

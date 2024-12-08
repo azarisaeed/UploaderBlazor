@@ -1,23 +1,97 @@
 ﻿@inherits LayoutComponentBase
 
 <PageTitle>Uploader</PageTitle>
-
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4 auth">
-            <AuthorizeView>
+<MudRTLProvider >
+    <MudThemeProvider Theme="_themeManager.Theme" IsDarkMode="true" />
+    <MudPopoverProvider />
+    <MudDialogProvider />
+    <MudSnackbarProvider />
+    <MudLayout>
+        <MudAppBar Elevation="_themeManager.AppBarElevation">
+@*             <MudThemeManagerButton OnClick="@((e) => OpenThemeManager(true))" />
+ *@
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="DrawerToggle" />
+           Uploader
+             <AuthorizeView>
                 <Authorized>
                     Hello, @context.User.Identity?.Name!
                 </Authorized>
             </AuthorizeView>
-        </div>
-
-        <article class="content px-4">
+        </MudAppBar>
+        <MudDrawer @bind-Open="@_drawerOpen" ClipMode="_themeManager.DrawerClipMode"   Elevation="_themeManager.DrawerElevation">
+            <NavMenu />
+            <MudThemeManager Open="_themeManagerOpen" OpenChanged="OpenThemeManager" Theme="_themeManager" ThemeChanged="UpdateTheme" />
+        </MudDrawer>
+        <MudMainContent>
             @Body
-        </article>
-    </main>
+        </MudMainContent>
+    </MudLayout>
+
+</MudRTLProvider>
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+    private ThemeManagerTheme _themeManager = new ThemeManagerTheme();
+    public bool _themeManagerOpen = false;
+
+    void OpenThemeManager(bool value)
+    {
+        _themeManagerOpen = value;
+    }
+
+    void UpdateTheme(ThemeManagerTheme value)
+    {
+        _themeManager = value;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        StateHasChanged();
+    }
+    public class GreenYellowTheme : MudTheme
+    {
+        public GreenYellowTheme()
+        {
+            PaletteLight = new PaletteLight
+                {
+                    Black = "#000000",
+                    White = "#FFFFFF",
+                    Primary = "#FF0000",
+                    Secondary = "#00FF00",
+                    Tertiary = "#0000FF",
+                    Success = "#00FFFF",
+                    Info = "#FFFF00",
+                    Warning = "#FF00FF",
+                    Error = "#C0C0C0",
+                    Dark = "#333333",
+                    Background = "#FFFFFF",
+                };
+
+            PaletteDark = new PaletteDark
+                {
+                    Black = "#000000",
+                    White = "#FFFFFF",
+                    Primary = "#FFFFFF", //white
+                    Secondary = "#c5b858", // yellow
+                    Tertiary = "#1b5e20", // green
+                    Success = "#00FFFF",
+                    Info = "#FFFF00",
+                    Warning = "#FF00FF",
+                    Error = "#C0C0C0",
+                    Dark = "#303030",
+                    Background = "#303030",
+                };
+        }
+    }
+}

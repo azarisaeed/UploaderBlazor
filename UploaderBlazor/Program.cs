@@ -2,6 +2,7 @@ using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using UploaderBlazor.Security;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 //var connectionString = builder.Configuration.GetConnectionString("UploaderBlazorContextConnection") ?? throw new InvalidOperationException("Connection string 'UploaderBlazorContextConnection' not found.");
@@ -21,6 +22,7 @@ builder.Services.AddAuthentication(o =>
 builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.TryAddSingleton(builder.Configuration.GetSection("PermissionModel").Get<PermissionModel>());
 builder.Services.AddRazorPages();
+builder.Services.AddMudServices();
 builder.Services.AddServerSideBlazor()
     .AddMicrosoftIdentityConsentHandler();
 

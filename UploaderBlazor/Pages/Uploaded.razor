@@ -10,59 +10,46 @@
 @page "/Uploaded"
 @inject IJSRuntime JS
 @inject NavigationManager NavigationManager
-
-
-
 <PageTitle>Uploaded</PageTitle>
-
-
-<h1>UploudedFiles</h1>
-
 @Exeption
 @if (Files == null)
 {
-    <p><em>Loading...</em></p>
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Row</th>
-                <th>Name</th>
-                <th>Directory</th>
-                <th>Create Date</th>
-                <th>Size</th>
-                <th>Preview</th>
-                <th>Download</th>
-                @if (IsAdmin)
-                {
-                    <th>Remove</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @{var i = 0;}
-            @foreach (var fl in Files)
+    <MudDataGrid Class="table" Items="Files" Filterable="false" SortMode="@SortMode.None" Groupable="false" Striped="true" >
+        <Columns>
+            <MudBlazor.PropertyColumn Title="Name" Property="internalphone => internalphone.Name" />
+            <MudBlazor.PropertyColumn Title="Directory" Property="internalphone => internalphone.Directory.Name" />
+            <MudBlazor.PropertyColumn Title="Create Date" Property="internalphone => internalphone.CreationTime" />
+            <MudBlazor.PropertyColumn Title="Size in MB" Property="internalphone => ((internalphone.Length / 1024f) / 1024f).ToString()" />
+            <MudBlazor.TemplateColumn Title="Preview" >
+                <CellTemplate>
+                    <MudStack Row>
+                        <MudImage src="@($"uploads/{context.Item.Directory.Name }/{context.Item.Name}")" alt="Can not Load image" width="100" />
+                    </MudStack>
+                </CellTemplate>
+            </MudBlazor.TemplateColumn>
+            <MudBlazor.TemplateColumn Title="Download" >
+                <CellTemplate>
+                    <MudStack Row>
+                        <MudButton Size="@Size.Small" @onclick='async ()=>await Download(context.Item.Directory.Name,context.Item.Name)' Variant="@Variant.Filled" Color="@Color.Primary">Download</MudButton>
+                    </MudStack>
+                </CellTemplate>
+            </MudBlazor.TemplateColumn>
+            @if (IsAdmin)
             {
-                i++;
-                var path = "uploads/" + fl.Directory.Name + "/" + fl.Name;
-                <tr>
-                    <td>@i</td>
-                    <td>@fl.Name</td>
-                    <td>@fl.Directory.Name</td>
-                    <td>@fl.CreationTime</td>
-                    <td>@((fl.Length / 1024f) / 1024f) Mb</td>
-                    <td><img src="@path" alt="Can not Load image" width="100" /></td>
-                    <td> <button @onclick='async ()=>await Download(fl.Directory.Name,fl.Name)'>Download</button> </td>
-                    @if (IsAdmin)
-                    {
-                        <td> <button @onclick='async ()=>await Remove(fl.Directory.FullName,fl.Name)'>Remove</button> </td>
-                    }
-                </tr>
+                <MudBlazor.TemplateColumn Title="Remove" >
+                    <CellTemplate>
+                        <MudStack Row>
+                            <MudButton Size="@Size.Small" @onclick='async ()=>await Remove(context.Item.Directory.FullName,context.Item.Name)' Variant="@Variant.Filled" Color="@Color.Primary">Remove</MudButton>
+                        </MudStack>
+                    </CellTemplate>
+                </MudBlazor.TemplateColumn>
             }
-        </tbody>
-    </table>
+        </Columns>
+    </MudDataGrid>
 }
 
 @code {
@@ -115,13 +102,13 @@ else
             DirectoryInfo dUnknown = new DirectoryInfo(basePathUnknown);
             Files.AddRange(dUnknown.GetFiles().ToList());
         }
-        Files = Files.OrderByDescending(i => i.CreationTime).ToList(); 
+        Files = Files.OrderByDescending(i => i.CreationTime).ToList();
     }
     protected async Task Download(string path, string Filename)
     {
-        await RedirectTo("uploads/"+path + "/" + Filename);
+        await RedirectTo("uploads/" + path + "/" + Filename);
     }
-    public  async Task<string> RedirectTo(string path)
+    public async Task<string> RedirectTo(string path)
     {
         return await JS.InvokeAsync<string>(
             "clientJsfunctions.RedirectTo", path);
